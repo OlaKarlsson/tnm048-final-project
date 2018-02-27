@@ -1,16 +1,15 @@
 queue()
-.defer(d3.csv,'static/data/data_small.csv')
-.defer(d3.json,'static/data/world-topo.json')
+.defer(d3.csv,'static/data/IMDB_movies/imdb_movie_metadata.csv')
+.defer(d3.csv,'static/data/Bechdel_dataset/bechdel_allmovies.csv')
 .await(draw);
 
-var area1;
-var map1;
+var bar;
+var pc;
 
-function draw(error, data, world_map_json){
+function draw(error, imdb, bechdel){
   if (error) throw error;
-
-  map1 = new map(data, world_map_json);
-  area1 = new area(data);
-
+  
+  bar = new bar(imdb, bechdel);
+  
 
 }
