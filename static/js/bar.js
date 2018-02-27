@@ -12,13 +12,37 @@ height = 300 - margin.top - margin.bottom;
 
 
 var parseTime = d3.timeParse("%Y");
+
 // set the ranges
-var x = d3.scaleTime()
-      .range([0, width]);
+var x = d3.scaleBand()
+        .rangeRound([0, width])
+        .padding(0.1)
 var y = d3.scaleLinear()
       .range([height, 0]);
 
-      
+
+var newYears = d3.nest()
+.key(function(d) { return d.year; })
+.rollup(function(values) { 
+    return d3.mean(values, function(d) {return +d.rating; }) })
+.map(bechdel);
+
+var newData = [];
+
+for (const key in newYears) {
+    if (newYears.hasOwnProperty(key)) {
+        var item = {
+            year: key.substr(1),
+            avg_rating:newYears[key]
+        }
+        newData.push(item);     
+               
+    }
+}
+
+
+console.log(newData);
+
 // append the svg object to the body of the page
 // append a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
@@ -30,6 +54,9 @@ var svg = d3.select(div).append("svg")
       "translate(" + margin.left + "," + margin.top + ")");
 
 
+
+      
+
 // format the data
 // data.forEach(function(d) {
 // d.sales = +d.sales;
@@ -37,18 +64,30 @@ var svg = d3.select(div).append("svg")
 
 // Scale the range of the data in the domains
 //x.domain(bechdel.map(function(d) { return d.year; }));
-x.domain(d3.extent(bechdel, function (d) { return parseTime(d.year); }));
-y.domain([0, d3.max(bechdel, function(d) { return d.rating; })]);
+x.domain(newData.map(function (d) { return d.year }));
+y.domain([0, 3]);
 
 // append the rectangles for the bar chart
-svg.selectAll(".bar")
-  .data(bechdel)
-.enter().append("rect")
-  .attr("class", "bar")
-  .attr("x", function(d) { return parseTime(d.year);  })
-  .attr("width", 5)
-.attr("y", function(d) { return y(d.rating); });
-//  .attr("height", function(d) { return height - y(d.sales); });
+// svg.selectAll(".bar")
+//   .data(newData)
+// .enter().append("rect")
+//   .attr("class", "bar")
+//   .attr("x", function(d) { return d.year  })
+//   .attr("width", 2)
+// .attr("y", function(d) { return y(d.avg_rating); })
+//   .attr("height", function(d) { return y(d.avg_rating); });
+
+
+  svg.selectAll(".rect")
+  .data(newData)
+  .enter()
+  .append("rect")
+      .attr("class", "bar")
+      .attr("x", function(d) { return x(d.year); })
+      .attr("y", function(d) { return y(d.avg_rating); })
+      .attr("width", 15)
+      .attr("height", function(d) { return height - y(d.avg_rating); });
+
 
 // add the x Axis
 svg.append("g")
