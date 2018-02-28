@@ -282,6 +282,5 @@ var parentWidth = $(pcChartDiv).parent().width();
                 },
             ];
         }
-    
     }
     
