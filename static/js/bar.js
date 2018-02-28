@@ -10,8 +10,6 @@ width = parentWidth - margin.left - margin.right,
 height = 300 - margin.top - margin.bottom;
 
 
-var parseTime = d3.timeParse("%Y");
-
 // set the ranges
 var x = d3.scaleBand()
         .rangeRound([0, width])
@@ -20,29 +18,38 @@ var y = d3.scaleLinear()
       .range([height, 0]);
 
      
+//Resources for d3.nest()
+//bl.ocks.org/shancarter/raw/4748131/
+//https://bl.ocks.org/ProQuestionAsker/60e7a6e3117f9f433ef9c998f6c776b6
+//https://stackoverflow.com/questions/37172184/rename-key-and-values-in-d3-nest
 
-
-var newYears = d3.nest()
+var newData = d3.nest()
 .key(function(d) { return d.year; })
-.rollup(function(values) { 
-    return d3.mean(values, function(d) {return +d.rating; }) })
-.map(bechdel);
-
-var newData = [];
-
-for (const key in newYears) {
-    if (newYears.hasOwnProperty(key)) {
-        var item = {
-            year: key.substr(1),
-            avg_rating:newYears[key]
-        }
-        newData.push(item);     
-               
+.rollup(function(values) {
+    return {
+        avgRating: d3.mean(values, function(d) {return +d.rating; }),
+        ratingCount: values.length      
+    };
+})
+.entries(bechdel)
+.map(function(group){
+    return {
+        year:group.key,
+        avgRating: group.value.avgRating,
+        count: group.value.ratingCount
     }
-}
+});
+
 
 
 console.log(newData);
+var filterTreshold = 20;
+var filteredData = newData.filter(function(d){
+    return d.count > filterTreshold;
+})
+
+console.log(filteredData);
+
 
 // append the svg object to the body of the page
 // append a 'group' element to 'svg'
@@ -67,27 +74,27 @@ var div = d3.select("body").append("div")
 
 // Scale the range of the data in the domains
 //x.domain(bechdel.map(function(d) { return d.year; }));
-x.domain(newData.map(function (d) { return d.year }));
+x.domain(filteredData.map(function (d) { return d.year }));
 y.domain([0, 3]);
 
 
 
   svg.selectAll(".bar")
-  .data(newData)
+  .data(filteredData)
   .enter()
   .append("rect")
       .attr("class", "bar")
       .attr("id", function(d){ return "bar-" + d.year})
       .attr("title", function(d){ return "bar-" + d.year})
       .attr("x", function(d) { return x(d.year); })
-      .attr("y", function(d) { return y(d.avg_rating); })
+      .attr("y", function(d) { return y(d.avgRating); })
       .attr("width", x.bandwidth)
-      .attr("height", function(d) { return height - y(d.avg_rating); })
+      .attr("height", function(d) { return height - y(d.avgRating); })
     .on("mouseover", function(d) {
     div.transition()
         .duration(200)
         .style("opacity", .9);
-    div.html("Year: " + d.year + "<br/>" + "Avg rating: " +d.avg_rating.toFixed(1))
+    div.html("Year: " + d.year + "<br/>" + "Avg rating: " +d.avgRating.toFixed(1)+ "<br/>" + "Count: " +d.count)
         .style("left", (d3.event.pageX) + "px")
         .style("top", (d3.event.pageY - 28) + "px");
     })
