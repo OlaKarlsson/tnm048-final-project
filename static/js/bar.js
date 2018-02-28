@@ -1,6 +1,5 @@
-function bar(imdb, bechdel, sales){
+function bar(imdb, bechdel){
 
-    console.log(sales);
     
     
 // set the dimensions and margins of the graph
@@ -19,6 +18,8 @@ var x = d3.scaleBand()
         .padding(0.1)
 var y = d3.scaleLinear()
       .range([height, 0]);
+
+     
 
 
 var newYears = d3.nest()
@@ -54,7 +55,9 @@ var svg = d3.select(div).append("svg")
       "translate(" + margin.left + "," + margin.top + ")");
 
 
-
+var div = d3.select("body").append("div")
+.attr("class", "tooltip")
+.style("opacity", 0);
       
 
 // format the data
@@ -67,26 +70,32 @@ var svg = d3.select(div).append("svg")
 x.domain(newData.map(function (d) { return d.year }));
 y.domain([0, 3]);
 
-// append the rectangles for the bar chart
-// svg.selectAll(".bar")
-//   .data(newData)
-// .enter().append("rect")
-//   .attr("class", "bar")
-//   .attr("x", function(d) { return d.year  })
-//   .attr("width", 2)
-// .attr("y", function(d) { return y(d.avg_rating); })
-//   .attr("height", function(d) { return y(d.avg_rating); });
 
 
-  svg.selectAll(".rect")
+  svg.selectAll(".bar")
   .data(newData)
   .enter()
   .append("rect")
       .attr("class", "bar")
+      .attr("id", function(d){ return "bar-" + d.year})
+      .attr("title", function(d){ return "bar-" + d.year})
       .attr("x", function(d) { return x(d.year); })
       .attr("y", function(d) { return y(d.avg_rating); })
-      .attr("width", 15)
-      .attr("height", function(d) { return height - y(d.avg_rating); });
+      .attr("width", x.bandwidth)
+      .attr("height", function(d) { return height - y(d.avg_rating); })
+    .on("mouseover", function(d) {
+    div.transition()
+        .duration(200)
+        .style("opacity", .9);
+    div.html("Year: " + d.year + "<br/>" + "Avg rating: " +d.avg_rating.toFixed(1))
+        .style("left", (d3.event.pageX) + "px")
+        .style("top", (d3.event.pageY - 28) + "px");
+    })
+    .on("mouseout", function(d) {
+    div.transition()
+        .duration(500)
+        .style("opacity", 0);
+    });
 
 
 // add the x Axis
