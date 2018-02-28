@@ -3,7 +3,7 @@ function bar(imdb, bechdel){
     
     
 // set the dimensions and margins of the graph
-var tooltipDiv = "#stacked-bar";
+var tooltipDiv = "#bar-chart";
 var parentWidth = $(tooltipDiv).parent().width();
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
 width = parentWidth - margin.left - margin.right,
@@ -116,7 +116,8 @@ svg.append("g")
 svg.append("g")
   .call(d3.axisLeft(y));
 
-
+  //Print out to the page where the filtering threshold is
+  d3.select("#threshold-label").html(filterTreshold);
 
 
 
